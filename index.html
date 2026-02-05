@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capital Calculator</title>
+</head>
+
+<body>
+    <h1>Capital Calculator</h1>
+    <!-- input fields for amount of money, time period, risk tolerance, country selector -->
+
+    <div class="input-fields">
+        <form id="capital-form">
+            <label for="amount">Amount of Money:</label>
+            <input type="number" id="amount" name="amount" required><br><br>
+            <label for="time-period">Time Period (years):</label>
+            <input type="number" id="time-period" name="time-period" required><br><br>
+            <label for="risk-tolerance">Risk Tolerance:</label>
+            <select id="risk-tolerance" name="risk-tolerance" required>
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+            </select><br><br>
+            <label for="country">Country:</label>
+            <select id="country" name="country" required>
+                <option value="us">United States</option>
+                <option value="uk">United Kingdom</option>
+                <option value="ru">Russia</option>
+            </select><br><br>
+            <input type="submit" value="Calculate">
+        </form>
+    </div>
+
+    <div class="pathways">
+        <div>
+            <h3 class="pathway-name">Bank deposit</h3>
+            <div class="pathway-final-value"></div>
+            <div class="pathway-annual-return"></div>
+            <div class="pathway-risk-label"></div>
+        </div>
+        <div>
+            <h3 class="pathway-name">Stocks</h3>
+            <div class="pathway-final-value"></div>
+            <div class="pathway-annual-return"></div>
+            <div class="pathway-risk-label"></div>
+        </div>
+        <div>
+            <h3 class="pathway-name">Crypto currency</h3>
+            <div class="pathway-final-value"></div>
+            <div class="pathway-annual-return"></div>
+            <div class="pathway-risk-label"></div>
+        </div>
+        <div>
+            <h3 class="pathway-name">Metals</h3>
+            <div class="pathway-final-value"></div>
+            <div class="pathway-annual-return"></div>
+            <div class="pathway-risk-label"></div>
+        </div>
+    </div>
+
+    <div class="disclaimer">
+        <h4>Disclaimer</h4>
+        <p>This tool is for informational purposes only and does not constitute financial advice. Investment decisions
+            should be made based on individual circumstances and in consultation with a qualified financial advisor.</p>
+    </div>
+</body>
+
+
+</html>
