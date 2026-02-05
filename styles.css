@@ -35,6 +35,12 @@ label {
     color: #0f172a;
 }
 
+.period-note {
+    font-weight: 400;
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
 input,
 select {
     width: 300px;
@@ -106,6 +112,36 @@ input[type="submit"]:hover {
     font-weight: 600;
     color: #0f172a;
     margin: 6px 0;
+}
+
+.pathway-risk,
+.pathway-capitalization,
+.pathway-capitalization-per-period,
+.pathway-profit {
+    margin: 8px 0;
+    font-size: 0.95rem;
+    color: #1e293b;
+}
+
+.pathway-risk {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.risk-bar {
+    flex: 1;
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.risk-indicator {
+    height: 100%;
+    background: #22c55e;
+    border-radius: 4px;
+    transition: width 0.3s ease, background-color 0.3s ease;
 }
 
 .disclaimer p {

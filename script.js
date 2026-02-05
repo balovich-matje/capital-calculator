@@ -1,6 +1,7 @@
 const startingCapitalInput = document.getElementById('amount');
 const timePeriodInput = document.getElementById('time-period');
 const countryInput = document.getElementById('country');
+const capitalizationPeriodInput = document.getElementById('capitalization-period');
 const amountCurrencySpan = document.querySelector('.amount-currency');
 const form = document.getElementById('capital-form');
 
@@ -8,6 +9,12 @@ const resultDiv = document.getElementById('result');
 const inflationUsdDiv = document.querySelector('.inflation-usd');
 const inflationEurDiv = document.querySelector('.inflation-eur');
 const inflationRubDiv = document.querySelector('.inflation-rub');
+
+// Bank deposit pathway elements
+const bankDepositCard = document.querySelector('.pathways > div');
+const bankDepositAnnualRate = bankDepositCard.querySelector('.pathway-capitalization');
+const bankDepositCapitalization = bankDepositCard.querySelector('.pathway-capitalization-per-period');
+const bankDepositProfit = bankDepositCard.querySelector('.pathway-profit');
 
 // 2015-2025 inflation data
 const usdInflation = {
@@ -119,6 +126,90 @@ const updateAmountCurrency = () => {
 
 countryInput.addEventListener('change', updateAmountCurrency);
 updateAmountCurrency();
+
+// Update risk bar colors based on fill percentage
+const updateRiskBarColors = () => {
+    const riskIndicators = document.querySelectorAll('.risk-indicator');
+    riskIndicators.forEach(indicator => {
+        const width = parseFloat(indicator.style.width);
+        let color;
+
+        if (width <= 33) {
+            color = '#22c55e'; // green
+        } else if (width <= 66) {
+            color = '#eab308'; // yellow
+        } else {
+            color = '#ef4444'; // red
+        }
+
+        indicator.style.backgroundColor = color;
+    });
+};
+
+updateRiskBarColors();
+
+// Function to calculate and update bank deposit based on inputs
+const updateBankDepositData = () => {
+    const startingCapital = parseFloat(startingCapitalInput.value) || parseFloat(startingCapitalInput.placeholder) || 0;
+    const timePeriod = parseInt(timePeriodInput.value, 10) || parseInt(timePeriodInput.placeholder, 10) || 0;
+    const capitalizationPeriod = capitalizationPeriodInput.value;
+
+    if (startingCapital <= 0 || timePeriod <= 0) {
+        bankDepositAnnualRate.textContent = 'Annual capitalization: --';
+        bankDepositCapitalization.textContent = 'Capitalization per period: --';
+        bankDepositProfit.textContent = 'Total estimated profit: --';
+        return;
+    }
+
+    // Get currency and corresponding interest rate
+    const currency = countryToCurrency[countryInput.value] || 'USD';
+    const annualRate = interestRates[currency] / 100;
+
+    // Determine periods per year based on capitalization period
+    let periodsPerYear;
+    let periodLabel;
+
+    switch (capitalizationPeriod) {
+        case '1month':
+            periodsPerYear = 12;
+            periodLabel = 'monthly';
+            break;
+        case '3months':
+            periodsPerYear = 4;
+            periodLabel = 'quarterly';
+            break;
+        case '6months':
+            periodsPerYear = 2;
+            periodLabel = 'semi-annual';
+            break;
+        case '1year':
+            periodsPerYear = 1;
+            periodLabel = 'annual';
+            break;
+        default:
+            periodsPerYear = 1;
+            periodLabel = 'annual';
+    }
+
+    // Compound interest formula: A = P(1 + r/n)^(nt)
+    const ratePerPeriod = annualRate / periodsPerYear;
+    const totalPeriods = periodsPerYear * timePeriod;
+    const finalValue = startingCapital * Math.pow((1 + ratePerPeriod), totalPeriods);
+    const profit = finalValue - startingCapital;
+
+    bankDepositAnnualRate.textContent = `Annual capitalization (${currency} average interest rate): ${(annualRate * 100).toFixed(2)}%`;
+    bankDepositCapitalization.textContent = `Capitalization per period: ${(ratePerPeriod * 100).toFixed(3)}% (${periodLabel})`;
+    bankDepositProfit.textContent = `Total estimated profit: ${profit.toFixed(2)} ${currency}`;
+};
+
+// Add event listeners to update data on input changes
+startingCapitalInput.addEventListener('input', updateBankDepositData);
+timePeriodInput.addEventListener('input', updateBankDepositData);
+countryInput.addEventListener('change', updateBankDepositData);
+capitalizationPeriodInput.addEventListener('change', updateBankDepositData);
+
+// Initial update
+updateBankDepositData();
 
 form.addEventListener('submit', (e) => {
     e.preventDefault();
