@@ -7,7 +7,8 @@
 body {
     font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
     color: #0f172a;
-    background: linear-gradient(135deg, #0f172a 0%, #0b3b8c 45%, #2dd4bf 100%);
+    background: linear-gradient(180deg, #1b1b1b 0%, #000000 100%);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
     min-height: 100vh;
     padding: 32px 20px 60px;
 }
@@ -99,6 +100,12 @@ input[type="submit"]:hover {
 
 .pathway-name {
     color: #0b3b8c;
+}
+
+.pathways-note {
+    margin-bottom: 12px;
+    color: #475569;
+    font-size: 0.95rem;
 }
 
 .inflation-info {
