@@ -98,6 +98,25 @@ input[type="submit"]:hover {
     box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
 }
 
+.wip-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.wip-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(148, 163, 184, 0.35);
+    color: #1e293b;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-shadow: none;
+}
+
 .pathway-name {
     color: #0b3b8c;
 }
