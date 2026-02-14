@@ -2,131 +2,88 @@
 <html lang="en">
 
 <head>
-    <link rel="stylesheet" href="styles.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
     <title>Capital Calculator</title>
 </head>
 
 <body>
-    <h1>Capital Calculator</h1>
-    <!-- input fields for amount of money, time period, risk tolerance, country selector -->
+    <div class="app-shell">
+        <header class="topbar panel">
+            <div>
+                <h1 data-i18n="appTitle">Capital Calculator</h1>
+                <p class="subtitle" data-i18n="appSubtitle">Portfolio pathways with historical context</p>
+            </div>
+            <div class="toolbar-controls">
+                <label class="toolbar-item" for="language-select">
+                    <span data-i18n="language">Language</span>
+                    <select id="language-select" name="language">
+                        <option value="en">English</option>
+                        <option value="de">Deutsch</option>
+                        <option value="ru">Русский</option>
+                    </select>
+                </label>
+                <button id="theme-toggle" class="theme-toggle" type="button">Dark</button>
+            </div>
+        </header>
 
-    <div class="input-fields">
-        <h2>Investment plan</h2>
-        <form id="capital-form">
-            <label for="amount" class="amount">Starting capital (<span class="amount-currency">USD</span>):</label><br>
-            <input type="number" id="amount" name="amount" placeholder="10,000" required><br><br>
-            <label for="time-period">Time Period (years):</label><br>
-            <input type="number" id="time-period" name="time-period" placeholder="5" required><br><br>
-            <label for="country">Country:</label><br>
-            <select id="country" name="country" required>
-                <option value="us">United States</option>
-                <option value="de">Germany</option>
-                <option value="ru">Russia</option>
-            </select><br><br>
-            <label for="capitalization-period">Capitalization Period <span class="period-note">(Bank deposit
-                    only):</span></label><br>
-            <select id="capitalization-period" name="capitalization-period" required>
-                <option value="1month">1 month</option>
-                <option value="3months">3 months</option>
-                <option value="6months">6 months</option>
-                <option value="1year" selected>1 year</option>
-            </select>
-        </form>
-    </div>
+        <main class="content-grid">
+            <section class="panel input-fields">
+                <h2 data-i18n="investmentPlan">Investment plan</h2>
+                <form id="capital-form">
+                    <label for="amount" class="amount">
+                        <span data-i18n="startingCapital">Starting capital</span>
+                        (<span class="amount-currency">USD</span>)
+                    </label>
+                    <input type="number" id="amount" name="amount" placeholder="10000" required>
 
-    <div class="pathways">
-        <h2>Investment Pathways</h2>
-        <p class="pathways-note">Averages shown are based on the last 10 years of available data.</p>
-        <div>
-            <h3 class="pathway-name">Bank deposit</h3>
-            <div class="pathway-risk">
-                <span>Risk:</span>
-                <div class="risk-bar">
-                    <div class="risk-indicator" style="width: 10%;"></div>
-                </div>
-            </div>
-            <div class="pathway-capitalization">Annual capitalization (average national deposit rates): 3.5%</div>
-            <div class="pathway-capitalization-per-period">Capitalization per period (annual / period): 3.5%</div>
-            <div class="pathway-profit">Total estimated profit: $350</div>
-        </div>
-        <div class="wip-card">
-            <h3 class="pathway-name">Stocks</h3>
-            <div class="pathway-risk">
-                <span>Risk:</span>
-                <div class="risk-bar">
-                    <div class="risk-indicator" style="width: 50%;"></div>
-                </div>
-            </div>
-            <div class="pathway-profit">Total estimated profit: $820</div>
-            <div class="wip-overlay">WIP</div>
-        </div>
-        <div class="wip-card">
-            <h3 class="pathway-name">Crypto currency</h3>
-            <div class="pathway-risk">
-                <span>Risk:</span>
-                <div class="risk-bar">
-                    <div class="risk-indicator" style="width: 85%;"></div>
-                </div>
-            </div>
-            <div class="pathway-profit">Total estimated profit: $4500</div>
-            <div class="wip-overlay">WIP</div>
-        </div>
-        <div class="metal-card wip-card" data-metal="gold">
-            <h3 class="pathway-name">Gold</h3>
-            <div class="pathway-risk">
-                <span>Risk:</span>
-                <div class="risk-bar">
-                    <div class="risk-indicator" style="width: 32%;"></div>
-                </div>
-            </div>
-            <div class="pathway-capitalization">Average annual growth: --</div>
-            <div class="pathway-profit">Total estimated profit: --</div>
-            <div class="wip-overlay">WIP</div>
-        </div>
-        <div class="metal-card wip-card" data-metal="silver">
-            <h3 class="pathway-name">Silver</h3>
-            <div class="pathway-risk">
-                <span>Risk:</span>
-                <div class="risk-bar">
-                    <div class="risk-indicator" style="width: 45%;"></div>
-                </div>
-            </div>
-            <div class="pathway-capitalization">Average annual growth: --</div>
-            <div class="pathway-profit">Total estimated profit: --</div>
-            <div class="wip-overlay">WIP</div>
-        </div>
-        <div class="metal-card wip-card" data-metal="platinum">
-            <h3 class="pathway-name">Platinum</h3>
-            <div class="pathway-risk">
-                <span>Risk:</span>
-                <div class="risk-bar">
-                    <div class="risk-indicator" style="width: 40%;"></div>
-                </div>
-            </div>
-            <div class="pathway-capitalization">Average annual growth: --</div>
-            <div class="pathway-profit">Total estimated profit: --</div>
-            <div class="wip-overlay">WIP</div>
-        </div>
-    </div>
+                    <label for="time-period" data-i18n="timePeriod">Time period (years)</label>
+                    <input type="number" id="time-period" name="time-period" placeholder="5" required>
 
-    <div class="inflation-rates">
-        <h2>Inflation Rates</h2>
-        <p class="inflation-info">Current inflation rates by currency, estimates based on 10 years:</p>
-        <div class="inflation-usd"></div>
-        <div class="inflation-eur"></div>
-        <div class="inflation-rub"></div>
-    </div>
+                    <label for="country" data-i18n="country">Country</label>
+                    <select id="country" name="country" required>
+                        <option value="us" data-country="us">United States</option>
+                        <option value="de" data-country="de">Germany</option>
+                        <option value="ru" data-country="ru">Russia</option>
+                    </select>
 
-    <div class="disclaimer">
-        <h4>Disclaimer</h4>
-        <p>This tool is for informational purposes only and does not constitute financial advice. Investment decisions
-            should be made based on individual circumstances and in consultation with a qualified financial advisor.</p>
+                    <label for="capitalization-period">
+                        <span data-i18n="capPeriod">Capitalization period</span>
+                        <span class="period-note" data-i18n="capPeriodNote">(bank deposit only)</span>
+                    </label>
+                    <select id="capitalization-period" name="capitalization-period" required>
+                        <option value="1month">1 month</option>
+                        <option value="3months">3 months</option>
+                        <option value="6months">6 months</option>
+                        <option value="1year" selected>1 year</option>
+                    </select>
+
+                    <button id="submit-btn" class="primary-btn" type="submit" data-i18n="calculate">Calculate
+                        pathways</button>
+                </form>
+            </section>
+
+            <section class="panel pathways">
+                <h2 data-i18n="pathwaysTitle">Investment pathways</h2>
+                <p class="pathways-note" data-i18n="pathwaysNote">Historical charts are based on pathway-specific yearly
+                    performance.</p>
+                <div id="api-pathways" class="pathway-grid"></div>
+            </section>
+
+            <section class="panel inflation-rates">
+                <h2 data-i18n="inflationTitle">Inflation</h2>
+                <p class="inflation-info" data-i18n="inflationInfo">Average inflation over selected country history</p>
+                <div class="inflation-grid">
+                    <div class="inflation-card inflation-usd"></div>
+                    <div class="inflation-card inflation-eur"></div>
+                    <div class="inflation-card inflation-rub"></div>
+                </div>
+            </section>
+        </main>
     </div>
 
     <script type="module" src="script.js"></script>
 </body>
-
 
 </html>

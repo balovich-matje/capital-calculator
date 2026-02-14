@@ -1,0 +1,20 @@
+{
+    "name": "capital-calculator",
+    "version": "1.0.0",
+    "description": "Capital Calculator with financial pathways, market data API, and update scripts",
+    "type": "module",
+    "scripts": {
+        "dev": "node backend/src/server.js",
+        "start": "node backend/src/server.js",
+        "update:companies": "node scripts/updateCompanyPrices.js",
+        "update:inflation": "node scripts/updateInflation.js",
+        "update:indexes": "node scripts/updateIndexes.js",
+        "update:metals": "node scripts/updateMetals.js",
+        "update:all": "node scripts/runAllUpdates.js"
+    },
+    "dependencies": {
+        "cors": "^2.8.5",
+        "express": "^4.21.2",
+        "pg": "^8.13.3"
+    }
+}

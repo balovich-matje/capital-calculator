@@ -1,209 +1,172 @@
-import {
-    usdInflation,
-    eurInflation,
-    rubInflation,
-    usaInterestRates,
-    germanyInterestRates,
-    russiaInterestRates,
-    goldGrowthRates,
-    silverGrowthRates,
-    platinumGrowthRates
-} from './data.js';
+import { mountCalculatorPage } from './frontend/pages/calculatorPage.js';
+import { fetchInflationByCountry } from './frontend/services/apiClient.js';
+import { getInitialLanguage, setLanguage, t, getLocale } from './frontend/i18n/translate.js';
 
-const startingCapitalInput = document.getElementById('amount');
-const timePeriodInput = document.getElementById('time-period');
-const countryInput = document.getElementById('country');
-const capitalizationPeriodInput = document.getElementById('capitalization-period');
-const amountCurrencySpan = document.querySelector('.amount-currency');
-const form = document.getElementById('capital-form');
-
-const resultDiv = document.getElementById('result');
-const inflationUsdDiv = document.querySelector('.inflation-usd');
-const inflationEurDiv = document.querySelector('.inflation-eur');
-const inflationRubDiv = document.querySelector('.inflation-rub');
-
-// Bank deposit pathway elements
-const bankDepositCard = document.querySelector('.pathways > div');
-const bankDepositAnnualRate = bankDepositCard.querySelector('.pathway-capitalization');
-const bankDepositCapitalization = bankDepositCard.querySelector('.pathway-capitalization-per-period');
-const bankDepositProfit = bankDepositCard.querySelector('.pathway-profit');
-
-const inflationRates = {};
-const calculateAverage = (obj) => Object.values(obj).slice(-10).reduce((a, b) => a + b, 0) / 10;
-
-inflationRates['USD'] = calculateAverage(usdInflation);
-inflationRates['EUR'] = calculateAverage(eurInflation);
-inflationRates['RUB'] = calculateAverage(rubInflation);
-
-inflationEurDiv.textContent = `EUR: ${inflationRates['EUR'].toFixed(2)}%`;
-inflationUsdDiv.textContent = `USD: ${inflationRates['USD'].toFixed(2)}%`;
-inflationRubDiv.textContent = `RUB: ${inflationRates['RUB'].toFixed(2)}%`;
-
-const interestRates = {};
-interestRates['USD'] = calculateAverage(usaInterestRates);
-interestRates['EUR'] = calculateAverage(germanyInterestRates);
-interestRates['RUB'] = calculateAverage(russiaInterestRates);
-
-const metalGrowthAverages = {
-    gold: calculateAverage(goldGrowthRates),
-    silver: calculateAverage(silverGrowthRates),
-    platinum: calculateAverage(platinumGrowthRates)
+const countryUiToApi = {
+    us: 'usa',
+    de: 'germany',
+    ru: 'russia'
 };
 
-const countryToCurrency = {
+const countryUiToCurrency = {
     us: 'USD',
     de: 'EUR',
     ru: 'RUB'
 };
 
-const updateAmountCurrency = () => {
-    const currency = countryToCurrency[countryInput.value] || 'USD';
+const THEME_KEY = 'capital-calculator-theme';
+
+const getInitialTheme = () => {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved === 'light' || saved === 'dark') {
+        return saved;
+    }
+
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+};
+
+const setTheme = (theme) => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem(THEME_KEY, theme);
+};
+
+const applyLanguage = ({ lang, countryInput }) => {
+    document.documentElement.lang = lang;
+
+    document.querySelectorAll('[data-i18n]').forEach((node) => {
+        const key = node.getAttribute('data-i18n');
+        node.textContent = t(lang, key);
+    });
+
+    const countryOptions = countryInput.querySelectorAll('option[data-country]');
+    countryOptions.forEach((option) => {
+        option.textContent = t(lang, option.dataset.country);
+    });
+};
+
+const updateAmountCurrency = ({ countryInput, amountCurrencySpan }) => {
+    const currency = countryUiToCurrency[countryInput.value] || 'USD';
     amountCurrencySpan.textContent = currency;
 };
 
-countryInput.addEventListener('change', updateAmountCurrency);
-updateAmountCurrency();
+const renderInflation = ({ countryCode, inflationRows, lang }) => {
+    const average = inflationRows.length
+        ? inflationRows.reduce((sum, row) => sum + Number(row.inflationPct), 0) / inflationRows.length
+        : 0;
 
-// Update risk bar colors based on fill percentage
-const updateRiskBarColors = () => {
-    const riskIndicators = document.querySelectorAll('.risk-indicator');
-    riskIndicators.forEach(indicator => {
-        const width = parseFloat(indicator.style.width);
-        let color;
+    const usdEl = document.querySelector('.inflation-usd');
+    const eurEl = document.querySelector('.inflation-eur');
+    const rubEl = document.querySelector('.inflation-rub');
 
-        if (width <= 33) {
-            color = '#22c55e'; // green
-        } else if (width <= 66) {
-            color = '#eab308'; // yellow
-        } else {
-            color = '#ef4444'; // red
-        }
+    const rows = {
+        us: '--',
+        de: '--',
+        ru: '--'
+    };
 
-        indicator.style.backgroundColor = color;
-    });
+    rows[countryCode] = `${average.toFixed(2)}%`;
+
+    usdEl.textContent = `USD: ${rows.us}`;
+    eurEl.textContent = `EUR: ${rows.de}`;
+    rubEl.textContent = `RUB: ${rows.ru}`;
+
+    const themeToggle = document.getElementById('theme-toggle');
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    themeToggle.textContent = currentTheme === 'dark' ? t(lang, 'switchToLight') : t(lang, 'switchToDark');
 };
 
-updateRiskBarColors();
-
-const parseNumberWithPlaceholder = (input) => {
-    const rawValue = input.value.trim();
-    if (rawValue) {
-        return parseFloat(rawValue.replace(/,/g, ''));
-    }
-
-    const rawPlaceholder = (input.placeholder || '').trim();
-    return rawPlaceholder ? parseFloat(rawPlaceholder.replace(/,/g, '')) : 0;
+const loadCountryInflation = async ({ countryCode, lang }) => {
+    const apiCountry = countryUiToApi[countryCode] || 'usa';
+    const response = await fetchInflationByCountry({ country: apiCountry });
+    renderInflation({ countryCode, inflationRows: response.inflation || [], lang });
 };
 
-const updateMetalsData = () => {
-    const startingCapital = parseNumberWithPlaceholder(startingCapitalInput);
-    const timePeriod = parseNumberWithPlaceholder(timePeriodInput);
-    const currency = countryToCurrency[countryInput.value] || 'USD';
+const getPathwayLabels = (lang) => ({
+    annualRate: t(lang, 'annualRate'),
+    totalReturn: t(lang, 'totalReturn'),
+    inflationAdjusted: t(lang, 'inflationAdjusted'),
+    history: t(lang, 'history'),
+    low: t(lang, 'low'),
+    medium: t(lang, 'medium'),
+    high: t(lang, 'high'),
+    'bank-deposit': t(lang, 'bank-deposit'),
+    'index-funds': t(lang, 'index-funds'),
+    'individual-stocks': t(lang, 'individual-stocks'),
+    crypto: t(lang, 'crypto'),
+    'precious-metals': t(lang, 'precious-metals'),
+    loading: t(lang, 'loading'),
+    inputError: t(lang, 'inputError'),
+    requestError: t(lang, 'requestError')
+});
 
-    const metalCards = document.querySelectorAll('.metal-card');
-    metalCards.forEach(card => {
-        const metalType = card.dataset.metal;
-        const averageLine = card.querySelector('.pathway-capitalization');
-        const profitLine = card.querySelector('.pathway-profit');
-        const averageRate = metalGrowthAverages[metalType];
+const init = () => {
+    const form = document.getElementById('capital-form');
+    const countryInput = document.getElementById('country');
+    const amountCurrencySpan = document.querySelector('.amount-currency');
+    const pathwaysContainer = document.getElementById('api-pathways');
+    const languageSelect = document.getElementById('language-select');
+    const themeToggle = document.getElementById('theme-toggle');
 
-        if (!averageRate || startingCapital <= 0 || timePeriod <= 0) {
-            averageLine.textContent = 'Average annual growth: --';
-            profitLine.textContent = 'Total estimated profit: --';
-            return;
-        }
-
-        averageLine.textContent = `Average annual growth: ${averageRate.toFixed(2)}%`;
-        const annualRate = averageRate / 100;
-        const finalValue = startingCapital * Math.pow((1 + annualRate), timePeriod);
-        const profit = finalValue - startingCapital;
-
-        profitLine.textContent = `Total estimated profit: ${profit.toFixed(2)} ${currency}`;
-    });
-};
-
-// Function to calculate and update bank deposit based on inputs
-const updateBankDepositData = () => {
-    const startingCapital = parseNumberWithPlaceholder(startingCapitalInput);
-    const timePeriod = parseNumberWithPlaceholder(timePeriodInput);
-    const capitalizationPeriod = capitalizationPeriodInput.value;
-
-    if (startingCapital <= 0 || timePeriod <= 0) {
-        bankDepositAnnualRate.textContent = 'Annual capitalization: --';
-        bankDepositCapitalization.textContent = 'Capitalization per period: --';
-        bankDepositProfit.textContent = 'Total estimated profit: --';
+    if (!form || !countryInput || !amountCurrencySpan || !pathwaysContainer || !languageSelect || !themeToggle) {
         return;
     }
 
-    // Get currency and corresponding interest rate
-    const currency = countryToCurrency[countryInput.value] || 'USD';
-    const annualRate = interestRates[currency] / 100;
+    let activeLanguage = getInitialLanguage();
+    let activeTheme = getInitialTheme();
 
-    // Determine periods per year based on capitalization period
-    let periodsPerYear;
-    let periodLabel;
+    languageSelect.value = activeLanguage;
+    setTheme(activeTheme);
+    applyLanguage({ lang: activeLanguage, countryInput });
+    updateAmountCurrency({ countryInput, amountCurrencySpan });
 
-    switch (capitalizationPeriod) {
-        case '1month':
-            periodsPerYear = 12;
-            periodLabel = 'monthly';
-            break;
-        case '3months':
-            periodsPerYear = 4;
-            periodLabel = 'quarterly';
-            break;
-        case '6months':
-            periodsPerYear = 2;
-            periodLabel = 'semi-annual';
-            break;
-        case '1year':
-            periodsPerYear = 1;
-            periodLabel = 'annual';
-            break;
-        default:
-            periodsPerYear = 1;
-            periodLabel = 'annual';
-    }
+    mountCalculatorPage({
+        form,
+        container: pathwaysContainer,
+        resolveCountry: (uiCountryCode) => countryUiToApi[uiCountryCode] || 'usa',
+        getLabels: () => getPathwayLabels(activeLanguage),
+        getLocale: () => getLocale(activeLanguage),
+        onSuccess: async () => {
+            try {
+                await loadCountryInflation({ countryCode: countryInput.value, lang: activeLanguage });
+            } catch (_error) {
+                renderInflation({ countryCode: countryInput.value, inflationRows: [], lang: activeLanguage });
+            }
+        }
+    });
 
-    // Compound interest formula: A = P(1 + r/n)^(nt)
-    const ratePerPeriod = annualRate / periodsPerYear;
-    const totalPeriods = periodsPerYear * timePeriod;
-    const finalValue = startingCapital * Math.pow((1 + ratePerPeriod), totalPeriods);
-    const profit = finalValue - startingCapital;
+    languageSelect.addEventListener('change', async (event) => {
+        activeLanguage = event.target.value;
+        setLanguage(activeLanguage);
+        applyLanguage({ lang: activeLanguage, countryInput });
 
-    bankDepositAnnualRate.textContent = `Annual capitalization (${currency} average interest rate): ${(annualRate * 100).toFixed(2)}%`;
-    bankDepositCapitalization.textContent = `Capitalization per period: ${(ratePerPeriod * 100).toFixed(3)}% (${periodLabel})`;
-    bankDepositProfit.textContent = `Total estimated profit: ${profit.toFixed(2)} ${currency}`;
+        try {
+            await loadCountryInflation({ countryCode: countryInput.value, lang: activeLanguage });
+        } catch (_error) {
+            renderInflation({ countryCode: countryInput.value, inflationRows: [], lang: activeLanguage });
+        }
+
+        form.requestSubmit();
+    });
+
+    countryInput.addEventListener('change', async () => {
+        updateAmountCurrency({ countryInput, amountCurrencySpan });
+
+        try {
+            await loadCountryInflation({ countryCode: countryInput.value, lang: activeLanguage });
+        } catch (_error) {
+            renderInflation({ countryCode: countryInput.value, inflationRows: [], lang: activeLanguage });
+        }
+    });
+
+    themeToggle.addEventListener('click', () => {
+        activeTheme = activeTheme === 'dark' ? 'light' : 'dark';
+        setTheme(activeTheme);
+        themeToggle.textContent = activeTheme === 'dark'
+            ? t(activeLanguage, 'switchToLight')
+            : t(activeLanguage, 'switchToDark');
+    });
+
+    form.requestSubmit();
 };
 
-// Add event listeners to update data on input changes
-startingCapitalInput.addEventListener('input', updateBankDepositData);
-timePeriodInput.addEventListener('input', updateBankDepositData);
-countryInput.addEventListener('change', updateBankDepositData);
-capitalizationPeriodInput.addEventListener('change', updateBankDepositData);
-
-startingCapitalInput.addEventListener('input', updateMetalsData);
-timePeriodInput.addEventListener('input', updateMetalsData);
-countryInput.addEventListener('change', updateMetalsData);
-
-// Initial update
-updateBankDepositData();
-updateMetalsData();
-
-form.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const startingCapital = parseFloat(startingCapitalInput.value);
-    const timePeriod = parseInt(timePeriodInput.value);
-    const country = countryInput.value;
-
-    const currency = countryToCurrency[country] || 'USD';
-
-    const inflationRate = inflationRates[currency] / 100;
-    const interestRate = interestRates[currency] / 100;
-
-    // Simple compound interest formula adjusted for inflation
-    const finalValue = startingCapital * Math.pow((1 + interestRate - inflationRate), timePeriod);
-
-    resultDiv.textContent = `Final value after ${timePeriod} years: ${finalValue.toFixed(2)} ${currency}`;
-});
+init();
